@@ -13,7 +13,7 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   const url = dataToUrl(event.notification.data);
-  event.waitUntil(this.openWindow(url))
+  event.waitUntil(clients.openWindow(url))
 })
 
 self.addEventListener('push', function(event) {

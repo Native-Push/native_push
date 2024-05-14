@@ -1,3 +1,3 @@
 function dataToUrl(data) {
-    return "";
+    return "https://google.de";
 }
