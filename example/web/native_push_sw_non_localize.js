@@ -1,6 +1,6 @@
 "use strict";
 
-importScripts("/localization.js", "/data_to_url.js")
+importScripts("/data_to_url.js");
 
 self.addEventListener('install', function(event) {
     event.waitUntil(self.skipWaiting());
@@ -17,15 +17,7 @@ self.addEventListener('notificationclick', function(event) {
 })
 
 self.addEventListener('push', function(event) {
-    let {title, titleLocalizationKey, titleLocalizationArgs, body, bodyLocalizationKey, bodyLocalizationArgs, imageUrl} = event.data.json();
-
-    const languages = navigator.languages;
-    if (titleLocalizationKey) {
-        title = localizations(languages, titleLocalizationKey, titleLocalizationArgs ?? []);
-    }
-    if (bodyLocalizationKey) {
-        body = localizations(languages, bodyLocalizationKey, bodyLocalizationArgs ?? []);
-    }
+    let {title, body, imageUrl} = event.data.json();
 
     return self.registration.showNotification(title, {
         body: body,

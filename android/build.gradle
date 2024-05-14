@@ -23,7 +23,6 @@ allprojects {
 
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.google.gms.google-services'
 
 android {
     if (project.android.hasProperty("namespace")) {
@@ -52,7 +51,7 @@ android {
 
     dependencies {
         implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
-        implementation("com.google.firebase:firebase-messaging")
+        api("com.google.firebase:firebase-messaging")
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
         testImplementation 'org.mockito:mockito-core:5.0.0'
     }

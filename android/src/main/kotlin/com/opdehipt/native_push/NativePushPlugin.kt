@@ -2,11 +2,15 @@ package com.opdehipt.native_push
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -22,18 +26,53 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 /** NativePushPlugin */
 class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
-  internal companion object {
+  companion object {
     private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
     private var channel: MethodChannel? = null
+    internal var mainActivityClass: Class<out Activity>? = null
+      private set
 
-    fun newToken(token: String) {
+    internal fun newToken(token: String) {
       channel?.invokeMethod("newNotificationToken", token)
+    }
+
+    private fun newNotification(intent: Intent) {
+      val data = parseNotification(intent)
+      channel?.invokeMethod("newNotification", data)
+    }
+
+    private fun parseNotification(intent: Intent?): Map<String, String> {
+      val keys = (intent?.extras?.keySet() ?: emptyList())
+      return if (keys.contains("native_push_data")) {
+        val dataString = intent?.getStringExtra("native_push_data")
+        val data = mutableMapOf<String, String>()
+        if (dataString != null) {
+          val jsonObject = JSONObject(dataString)
+          val jsonKeys = jsonObject.keys()
+          for (key in jsonKeys) {
+            val value = jsonObject.getString(key)
+            data[key] = value
+          }
+        }
+        data
+      }
+      else {
+        val filteredKeys = keys
+          .filterNot { it.startsWith("google") || it.startsWith("gcm") || it in listOf("from", "collapse_key") }
+        val data = mutableMapOf<String, String>()
+        for (key in filteredKeys) {
+          val value = intent?.getStringExtra(key) ?: continue
+          data[key] = value
+        }
+        data
+      }
     }
   }
 
@@ -58,9 +97,10 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
       try {
         when (call.method) {
           "initialize" -> {
-            initialize()
+            initialize(call.arguments as Map<String, Any>)
             result.success(null)
           }
+          "getInitialNotification" -> result.success(getInitialNotification())
           "registerForRemoteNotification" -> result.success(registerForRemoteNotification())
           "getNotificationToken" -> result.success(getNotificationToken())
           else -> result.notImplemented()
@@ -88,6 +128,11 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
+    mainActivityClass = activity?.javaClass
+    binding.addOnNewIntentListener {
+      newNotification(it)
+      false
+    }
     binding.addRequestPermissionsResultListener(this)
   }
 
@@ -104,9 +149,28 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
     NativePushPlugin.channel = null
   }
 
-  private fun initialize() {
-    Firebase.initialize(context)
+  private suspend fun initialize(params: Map<String, Any>) {
+    withContext(Dispatchers.Main) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (params["useDefaultNotificationChannel"] as Boolean)) {
+          val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+          notificationManager?.createNotificationChannel(
+              NotificationChannel(
+                  "native_push_notification_channel",
+                  "Default Notification Channel",
+                  NotificationManager.IMPORTANCE_DEFAULT,
+              ),
+          )
+      }
+      val firebaseOptions = params["firebaseOptions"] as Map<String, String>
+      val options = FirebaseOptions.Builder()
+        .setProjectId(firebaseOptions["projectId"])
+        .setApplicationId(firebaseOptions["applicationId"]!!)
+        .build()
+      Firebase.initialize(context, options)
+    }
   }
+
+  private fun getInitialNotification(): Map<String, String> = parseNotification(activity?.intent)
 
   private suspend fun registerForRemoteNotification() =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

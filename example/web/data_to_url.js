@@ -1,0 +1,3 @@
+function dataToUrl(data) {
+    return "";
+}

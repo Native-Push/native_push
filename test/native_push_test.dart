@@ -8,16 +8,22 @@ final class MockNativePushPlatform
     extends NativePushPlatform
     with MockPlatformInterfaceMixin {
   @override
-  Future<void> initialize() async {}
+  Future<void> initialize({required final Map<String, String>? firebaseOptions, required final bool useDefaultNotificationChannel}) async {}
 
   @override
-  Future<bool> registerForRemoteNotification() => Future.value(false);
+  Future<Map<String, String>?> initialNotification() async => null;
+
+  @override
+  Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey}) => Future.value(false);
 
   @override
   Future<(NotificationService, String?)> get notificationToken => Future.value((NotificationService.apns, '42'));
 
   @override
   Stream<(NotificationService, String?)> get notificationTokenStream => Stream.value((NotificationService.apns, '42'));
+
+  @override
+  Stream<Map<String, String>> get notificationStream => Stream.value({});
 }
 
 void main() {
@@ -28,7 +34,7 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    final nativePushPlugin = NativePush();
+    const nativePushPlugin = NativePush.instance;
     final fakePlatform = MockNativePushPlatform();
     NativePushPlatform.instance = fakePlatform;
 

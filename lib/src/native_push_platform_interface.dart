@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:native_push/src/native_push_method_channel.dart';
+import 'package:native_push/src/notification_option.dart';
 import 'package:native_push/src/notification_service.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -25,8 +26,10 @@ abstract base class NativePushPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> initialize();
-  Future<bool> registerForRemoteNotification();
+  Future<void> initialize({required final Map<String, String>? firebaseOptions, required final bool useDefaultNotificationChannel});
+  Future<Map<String, String>?> initialNotification();
+  Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey});
   Future<(NotificationService, String?)> get notificationToken;
   Stream<(NotificationService, String?)> get notificationTokenStream;
+  Stream<Map<String, String>> get notificationStream;
 }

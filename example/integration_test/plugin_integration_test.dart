@@ -16,7 +16,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('getPlatformVersion test', (final tester) async {
-    final plugin = NativePush();
+    const plugin = NativePush.instance;
     final (_, version) = await plugin.notificationToken;
     // The version string depends on the host platform running the test, so
     // just assert that some non-empty string is returned.
