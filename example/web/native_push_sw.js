@@ -21,10 +21,10 @@ self.addEventListener('push', function(event) {
 
     const languages = navigator.languages;
     if (titleLocalizationKey) {
-        title = localizations(languages, titleLocalizationKey, titleLocalizationArgs ?? []);
+        title = localization(languages, titleLocalizationKey, titleLocalizationArgs ?? []);
     }
     if (bodyLocalizationKey) {
-        body = localizations(languages, bodyLocalizationKey, bodyLocalizationArgs ?? []);
+        body = localization(languages, bodyLocalizationKey, bodyLocalizationArgs ?? []);
     }
 
     return self.registration.showNotification(title, {

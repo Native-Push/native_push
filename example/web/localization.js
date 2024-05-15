@@ -1,3 +1,3 @@
-function localizations(language, localization, args) {
+function localization(language, localization, args) {
 
 }
