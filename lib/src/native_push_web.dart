@@ -36,7 +36,7 @@ final class NativePushWeb extends NativePushPlatform {
   @override
   Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey}) async {
     if (vapidKey == null) {
-      throw Error(); // TODO(sven): replace with actual error
+      throw ArgumentError('Vapid key must be specified when using native push on the web.');
     }
     final success = await _registerForRemoteNotification(vapidKey.toJS).toDart;
     return success.toDart;
