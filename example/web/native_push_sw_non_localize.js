@@ -1,26 +1,54 @@
 "use strict";
 
-importScripts("/data_to_url.js");
+self.onpush = (event) => {
+    let {
+        title,
+        titleLocalizationKey,
+        titleLocalizationArgs,
+        body,
+        bodyLocalizationKey,
+        bodyLocalizationArgs,
+        image,
+        ...data
+    } = event.data.json();
 
-self.addEventListener('install', function(event) {
+    event.waitUntil(self.registration.showNotification(title, {
+        body,
+        image,
+        data,
+    }));
+};
+
+self.oninstall = event => {
     event.waitUntil(self.skipWaiting());
-});
+};
 
-self.addEventListener('activate', function(event) {
+self.onactivate = (event) => {
     event.waitUntil(self.clients.claim());
-});
+};
 
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  const url = dataToUrl(event.notification.data);
-  event.waitUntil(clients.openWindow(url))
-})
-
-self.addEventListener('push', function(event) {
-    let {title, body, imageUrl} = event.data.json();
-
-    return self.registration.showNotification(title, {
-        body: body,
-        image: imageUrl,
-    });
-});
+self.onnotificationclick = (event) => {
+    event.notification.close();
+    event.waitUntil(
+        self.clients.matchAll({
+            type: "window",
+        })
+        .then(async (clientList) => {
+            const data = event.notification.data;
+            if (data) {
+                if (clientList.length !== 0) {
+                    const client = clientList[0];
+                    await client.focus();
+                    client.postMessage({type: "native_push_newNotification", data: data});
+                }
+                else {
+                    const dataBase64 = btoa(JSON.stringify(data))
+                        .replace("+", '-')
+                        .replace("/", '_')
+                        .replace("=", '')
+                    await self.clients.openWindow(`/#${dataBase64}`);
+                }
+            }
+        }),
+  );
+};
