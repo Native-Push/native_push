@@ -6,18 +6,16 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:native_push/src/native_push_platform_interface.dart';
 import 'package:native_push/src/notification_option.dart';
 import 'package:native_push/src/notification_service.dart';
+import 'package:web/web.dart' as web;
 
 @JS('native_push_initializeRemoteNotification')
 external JSPromise _initialize(final JSFunction newNotificationCallback);
 
-@JS('native_push_getInitialNotification')
-external JSObject? _getInitialNotification();
+@JS('native_push_initialNotification')
+external JSObject? _initialNotification;
 
 @JS('native_push_registerForRemoteNotification')
 external JSPromise<JSBoolean> _registerForRemoteNotification(final JSString vapidKey);
-
-@JS('native_push_getNotificationToken')
-external JSString? _getNotificationToken();
 
 /// A web implementation of the NativePushPlatform of the NativePush plugin.
 @immutable
@@ -41,7 +39,7 @@ final class NativePushWeb extends NativePushPlatform {
 
   @override
   Future<Map<String, String>?> initialNotification() async {
-    final data = _getInitialNotification().dartify() as Map?;
+    final data = _initialNotification.dartify() as Map?;
     return data?.map((final key, final value) => MapEntry(key as String, value as String));
   }
 
@@ -55,8 +53,10 @@ final class NativePushWeb extends NativePushPlatform {
   }
 
   @override
-  Future<(NotificationService, String?)> get notificationToken async =>
-    (NotificationService.webPush, _getNotificationToken()?.toDart);
+  Future<(NotificationService, String?)> get notificationToken async {
+    final token = web.window.localStorage.getItem('native_push_token');
+    return (NotificationService.webPush, token);
+  }
 
   @override
   Stream<(NotificationService, String?)> get notificationTokenStream => const Stream.empty();

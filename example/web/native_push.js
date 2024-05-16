@@ -1,5 +1,18 @@
 let native_push_newNotificationCallback;
-let native_push_initialNotification;
+
+const href = location.href;
+if (href.includes("#")) {
+    const parts = href.split("#");
+    const base64InitialNotification = parts[1];
+    const padding = 4 - base64InitialNotification.length % 4;
+    native_push_initialNotification = JSON.parse(atob(
+        base64InitialNotification
+            .replace("-", "+")
+            .replace("_", '/')
+            .padEnd(base64InitialNotification.length + (padding % 4), "=")
+    ));
+    history.replaceState(null, "", parts[0])
+}
 
 async function native_push_initializeRemoteNotification(newNotificationCallback) {
     native_push_newNotificationCallback = newNotificationCallback;
@@ -13,21 +26,6 @@ async function native_push_initializeRemoteNotification(newNotificationCallback)
                 break;
         }
     }
-    const href = window.location.href;
-    if (href.includes("#")) {
-        const base64InitialNotification = href.split("#")[1]
-        const padding = 4 - base64InitialNotification.length % 4;
-        native_push_initialNotification = JSON.parse(atob(
-            base64InitialNotification
-                .replace("-", "+")
-                .replace("_", '/')
-                .padEnd(base64InitialNotification.length + (padding === 4 ? 0 : padding), "=")
-        ));
-    }
-}
-
-function native_push_getInitialNotification() {
-    return native_push_initialNotification;
 }
 
 async function native_push_registerForRemoteNotification(vapidKey) {
@@ -53,14 +51,10 @@ async function native_push_registerForRemoteNotification(vapidKey) {
             "p256dh": json.keys["p256dh"],
             "auth": json.keys["auth"],
         }
-        window.localStorage.setItem('native_push_subscriptionEndpoint', JSON.stringify(payload));
+        window.localStorage.setItem('native_push_token', JSON.stringify(payload));
         return true;
     }
     else {
         return false;
     }
-}
-
-function native_push_getNotificationToken() {
-    return window.localStorage.getItem('native_push_subscriptionEndpoint');
 }

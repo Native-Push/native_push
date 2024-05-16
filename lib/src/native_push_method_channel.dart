@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -58,10 +59,16 @@ final class MethodChannelNativePush extends NativePushPlatform {
   @override
   Stream<Map<String, String>> get notificationStream => _notificationStreamController.stream;
 
-  static final _notificationService = (() =>
-    switch (defaultTargetPlatform) {
-      TargetPlatform.android => NotificationService.fcm,
-      TargetPlatform.iOS || TargetPlatform.macOS => NotificationService.apns,
-      TargetPlatform.windows || TargetPlatform.linux || TargetPlatform.fuchsia  => NotificationService.unknown,
-    })();
+  @pragma('vm:platform-const')
+  static final _notificationService = () {
+    if (Platform.isAndroid) {
+      return NotificationService.fcm;
+    }
+    else if (Platform.isIOS || Platform.isMacOS) {
+      return NotificationService.apns;
+    }
+    else {
+      return NotificationService.unknown;
+    }
+  }();
 }
