@@ -1,0 +1,15 @@
+{
+  "originHash" : "2b76b036afd2d828b22b018e4d2d0863586e59dcdc61ed8473ad8eb91315012d",
+  "pins" : [
+    {
+      "identity" : "native_push_notification_service",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Native-Push/native_push_notification_service",
+      "state" : {
+        "revision" : "2220d1d0e7312c7a1ea056655b8f04174b1a230d",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 3
+}

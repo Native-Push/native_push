@@ -2,14 +2,14 @@ group 'com.opdehipt.native_push'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '2.0.0-RC3'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath 'com.android.tools.build:gradle:8.4.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -46,14 +46,13 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
     }
 
     dependencies {
-        implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
-        api("com.google.firebase:firebase-messaging")
+        api("com.google.firebase:firebase-messaging:24.0.0")
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
-        testImplementation 'org.mockito:mockito-core:5.0.0'
+        testImplementation 'org.mockito:mockito-core:5.12.0'
     }
 
     testOptions {

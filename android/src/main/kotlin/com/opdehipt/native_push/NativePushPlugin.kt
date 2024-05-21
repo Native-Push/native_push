@@ -31,27 +31,46 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-/** NativePushPlugin */
-class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+/**
+ * Plugin class for handling native push notifications in a Flutter application.
+ */
+class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.RequestPermissionsResultListener {
+
   companion object {
     private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
     private var channel: MethodChannel? = null
     internal var mainActivityClass: Class<out Activity>? = null
       private set
 
+    /**
+     * Passes the new notification token to the Flutter side.
+     *
+     * @param token The new FCM token.
+     */
     internal fun newToken(token: String) {
       channel?.invokeMethod("newNotificationToken", token)
     }
 
+    /**
+     * Parses the notification data from the given intent and sends it to the Flutter side.
+     *
+     * @param intent The intent containing notification data.
+     */
     private fun newNotification(intent: Intent) {
       val data = parseNotification(intent)
       channel?.invokeMethod("newNotification", data)
     }
 
+    /**
+     * Parses the notification data from the given intent.
+     *
+     * @param intent The intent containing notification data.
+     * @return A map containing the notification data.
+     */
     private fun parseNotification(intent: Intent?): Map<String, String> {
       val keys = (intent?.extras?.keySet() ?: emptyList())
       return if (keys.contains("native_push_data")) {
-        val dataString = intent?.getStringExtra("native_push_data")
+        val dataString = intent?.extras?.getString("native_push_data")
         val data = mutableMapOf<String, String>()
         if (dataString != null) {
           val jsonObject = JSONObject(dataString)
@@ -68,7 +87,7 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
           .filterNot { it.startsWith("google") || it.startsWith("gcm") || it in listOf("from", "collapse_key") }
         val data = mutableMapOf<String, String>()
         for (key in filteredKeys) {
-          val value = intent?.getStringExtra(key) ?: continue
+          val value = intent?.extras?.getString(key) ?: continue
           data[key] = value
         }
         data
@@ -76,15 +95,17 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
     }
   }
 
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel : MethodChannel
-  private lateinit var context : Context
-  private var activity : Activity? = null
+  // The MethodChannel that will facilitate communication between Flutter and native Android
+  private lateinit var channel: MethodChannel
+  private lateinit var context: Context
+  private var activity: Activity? = null
   private var continuation: Continuation<Boolean>? = null
 
+  /**
+   * Called when the plugin is attached to the Flutter engine.
+   *
+   * @param flutterPluginBinding The binding that provides the Flutter engine context.
+   */
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     context = flutterPluginBinding.applicationContext
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.opdehipt.native_push")
@@ -92,6 +113,12 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
     NativePushPlugin.channel = channel
   }
 
+  /**
+   * Called when a method is invoked on the MethodChannel.
+   *
+   * @param call The method call.
+   * @param result The result of the method call.
+   */
   override fun onMethodCall(call: MethodCall, result: Result) {
     CoroutineScope(Dispatchers.Main).launch {
       try {
@@ -106,16 +133,29 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
           else -> result.notImplemented()
         }
       }
-      catch (e : Exception) {
+      catch (e: Exception) {
         result.error("native_push_error", null, e)
       }
     }
   }
 
+  /**
+   * Called when the plugin is detached from the Flutter engine.
+   *
+   * @param binding The binding that provided the Flutter engine context.
+   */
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
   }
 
+  /**
+   * Handles the result of a permission request.
+   *
+   * @param code The request code.
+   * @param permissions The requested permissions.
+   * @param grantResults The grant results for the corresponding permissions.
+   * @return True if the request code matches, false otherwise.
+   */
   override fun onRequestPermissionsResult(code: Int, permissions: Array<out String>, grantResults: IntArray) =
     when (code) {
       NOTIFICATION_PERMISSION_REQUEST_CODE -> {
@@ -126,6 +166,11 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
       else -> false
     }
 
+  /**
+   * Called when the plugin is attached to an activity.
+   *
+   * @param binding The binding that provides the activity context.
+   */
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
     mainActivityClass = activity?.javaClass
@@ -136,19 +181,35 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
     binding.addRequestPermissionsResultListener(this)
   }
 
+  /**
+   * Called when the plugin is reattached to an activity for configuration changes.
+   *
+   * @param binding The binding that provides the activity context.
+   */
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
   }
 
+  /**
+   * Called when the plugin is detached from an activity.
+   */
   override fun onDetachedFromActivity() {
     activity = null
   }
 
+  /**
+   * Called when the plugin is detached from an activity for configuration changes.
+   */
   override fun onDetachedFromActivityForConfigChanges() {
     onDetachedFromActivity()
     NativePushPlugin.channel = null
   }
 
+  /**
+   * Initializes the plugin with the provided parameters.
+   *
+   * @param params The initialization parameters.
+   */
   private suspend fun initialize(params: Map<String, Any>) {
     withContext(Dispatchers.Main) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (params["useDefaultNotificationChannel"] as Boolean)) {
@@ -165,13 +226,24 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
       val options = FirebaseOptions.Builder()
         .setProjectId(firebaseOptions["projectId"])
         .setApplicationId(firebaseOptions["applicationId"]!!)
+        .setApiKey(firebaseOptions["apiKey"]!!)
         .build()
       Firebase.initialize(context, options)
     }
   }
 
+  /**
+   * Retrieves the initial notification data if available.
+   *
+   * @return A map containing the initial notification data.
+   */
   private fun getInitialNotification(): Map<String, String> = parseNotification(activity?.intent)
 
+  /**
+   * Registers for remote notifications, requesting permissions if necessary.
+   *
+   * @return True if registration was successful, false otherwise.
+   */
   private suspend fun registerForRemoteNotification() =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
       val status = ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -206,6 +278,11 @@ class NativePushPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginR
       true
     }
 
+  /**
+   * Retrieves the current FCM notification token.
+   *
+   * @return The current FCM token.
+   */
   private suspend fun getNotificationToken() =
     withContext(Dispatchers.IO) {
       FirebaseMessaging.getInstance().token.await()
