@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseOptions
@@ -48,7 +50,9 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
      * @param token The new FCM token.
      */
     internal fun newToken(token: String) {
-      channel?.invokeMethod("newNotificationToken", token)
+      Handler(Looper.getMainLooper()).post {
+        channel?.invokeMethod("newNotificationToken", token)
+      }
     }
 
     /**
