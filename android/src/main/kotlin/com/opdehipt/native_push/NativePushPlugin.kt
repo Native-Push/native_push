@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.app.ActivityCompat
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.initialize
 import com.google.firebase.messaging.FirebaseMessaging
@@ -216,23 +217,26 @@ class NativePushPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, Plugin
    */
   private suspend fun initialize(params: Map<String, Any>) {
     withContext(Dispatchers.Main) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (params["useDefaultNotificationChannel"] as Boolean)) {
-          val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+      if (FirebaseApp.getApps(context).isEmpty()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (params["useDefaultNotificationChannel"] as Boolean)) {
+          val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
           notificationManager?.createNotificationChannel(
-              NotificationChannel(
-                  "native_push_notification_channel",
-                  "Default Notification Channel",
-                  NotificationManager.IMPORTANCE_DEFAULT,
-              ),
+            NotificationChannel(
+              "native_push_notification_channel",
+              "Default Notification Channel",
+              NotificationManager.IMPORTANCE_DEFAULT,
+            ),
           )
+        }
+        val firebaseOptions = params["firebaseOptions"] as Map<String, String>
+        val options = FirebaseOptions.Builder()
+          .setProjectId(firebaseOptions["projectId"])
+          .setApplicationId(firebaseOptions["applicationId"]!!)
+          .setApiKey(firebaseOptions["apiKey"]!!)
+          .build()
+        Firebase.initialize(context, options)
       }
-      val firebaseOptions = params["firebaseOptions"] as Map<String, String>
-      val options = FirebaseOptions.Builder()
-        .setProjectId(firebaseOptions["projectId"])
-        .setApplicationId(firebaseOptions["applicationId"]!!)
-        .setApiKey(firebaseOptions["apiKey"]!!)
-        .build()
-      Firebase.initialize(context, options)
     }
   }
 
