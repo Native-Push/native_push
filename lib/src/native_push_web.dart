@@ -18,7 +18,8 @@ external JSObject? _initialNotification;
 
 /// External JavaScript function to register for remote notifications.
 @JS('native_push_registerForRemoteNotification')
-external JSPromise<JSBoolean> _registerForRemoteNotification(final JSString vapidKey);
+external JSPromise<JSBoolean> _registerForRemoteNotification(
+    final JSString vapidKey);
 
 /// A web implementation of the NativePushPlatform of the NativePush plugin.
 @immutable
@@ -32,9 +33,12 @@ final class NativePushWeb extends NativePushPlatform {
   final _notificationStreamController = StreamController<Map<String, String>>();
 
   @override
-  Future<void> initialize({required final Map<String, String>? firebaseOptions, required final bool useDefaultNotificationChannel}) async {
+  Future<void> initialize(
+      {required final Map<String, String>? firebaseOptions,
+      required final bool useDefaultNotificationChannel}) async {
     // Initializes the native push notification system.
-    final script = web.window.document.createElement('script') as web.HTMLScriptElement
+    final script = web.window.document.createElement('script')
+        as web.HTMLScriptElement
       ..src = '/native_push.js';
     web.window.document.head?.appendChild(script);
     await script.onLoad.first;
@@ -43,8 +47,8 @@ final class NativePushWeb extends NativePushPlatform {
 
   /// Callback function to handle new notifications.
   void _newNotification(final JSObject object) {
-    final data = (object.dartify()! as Map)
-        .map((final key, final value) => MapEntry(key as String, value as String));
+    final data = (object.dartify()! as Map).map(
+        (final key, final value) => MapEntry(key as String, value as String));
     _notificationStreamController.add(data);
   }
 
@@ -52,14 +56,18 @@ final class NativePushWeb extends NativePushPlatform {
   Future<Map<String, String>?> initialNotification() async {
     // Gets the initial notification if the app was opened from a notification.
     final data = _initialNotification.dartify() as Map?;
-    return data?.map((final key, final value) => MapEntry(key as String, value as String));
+    return data?.map(
+        (final key, final value) => MapEntry(key as String, value as String));
   }
 
   @override
-  Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey}) async {
+  Future<bool> registerForRemoteNotification(
+      {required final List<NotificationOption> options,
+      required final String? vapidKey}) async {
     // Registers for remote notifications using the VAPID key.
     if (vapidKey == null) {
-      throw ArgumentError('Vapid key must be specified when using native push on the web.');
+      throw ArgumentError(
+          'Vapid key must be specified when using native push on the web.');
     }
     final success = await _registerForRemoteNotification(vapidKey.toJS).toDart;
     return success.toDart;
@@ -73,8 +81,10 @@ final class NativePushWeb extends NativePushPlatform {
   }
 
   @override
-  Stream<(NotificationService, String?)> get notificationTokenStream => const Stream.empty();
+  Stream<(NotificationService, String?)> get notificationTokenStream =>
+      const Stream.empty();
 
   @override
-  Stream<Map<String, String>> get notificationStream => _notificationStreamController.stream;
+  Stream<Map<String, String>> get notificationStream =>
+      _notificationStreamController.stream;
 }

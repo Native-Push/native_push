@@ -15,7 +15,8 @@ final class MethodChannelNativePush extends NativePushPlatform {
   final methodChannel = const MethodChannel('com.opdehipt.native_push');
 
   // Stream controllers to handle notification tokens and incoming notifications.
-  final _tokenStreamController = StreamController<(NotificationService, String?)>();
+  final _tokenStreamController =
+      StreamController<(NotificationService, String?)>();
   final _notificationStreamController = StreamController<Map<String, String>>();
 
   /// Initializes the push notification service.
@@ -23,7 +24,9 @@ final class MethodChannelNativePush extends NativePushPlatform {
   /// [firebaseOptions] - Configuration options for Firebase.
   /// [useDefaultNotificationChannel] - Whether to use the default notification channel.
   @override
-  Future<void> initialize({required final Map<String, String>? firebaseOptions, required final bool useDefaultNotificationChannel}) async {
+  Future<void> initialize(
+      {required final Map<String, String>? firebaseOptions,
+      required final bool useDefaultNotificationChannel}) async {
     // Sets up a method call handler to listen for method calls from the native platform.
     methodChannel.setMethodCallHandler((final call) async {
       switch (call.method) {
@@ -33,7 +36,8 @@ final class MethodChannelNativePush extends NativePushPlatform {
           break;
         case 'newNotification':
           // Adds a new notification to the notification stream.
-          _notificationStreamController.add(_convertNotification(call.arguments));
+          _notificationStreamController
+              .add(_convertNotification(call.arguments));
           break;
         default:
           // Handles any other method calls that are not explicitly managed.
@@ -42,7 +46,10 @@ final class MethodChannelNativePush extends NativePushPlatform {
     });
 
     // Invokes the initialize method on the native platform.
-    await methodChannel.invokeMethod('initialize', {'firebaseOptions': firebaseOptions, 'useDefaultNotificationChannel': useDefaultNotificationChannel});
+    await methodChannel.invokeMethod('initialize', {
+      'firebaseOptions': firebaseOptions,
+      'useDefaultNotificationChannel': useDefaultNotificationChannel
+    });
   }
 
   /// Gets the initial notification if the app was opened from a notification.
@@ -51,14 +58,17 @@ final class MethodChannelNativePush extends NativePushPlatform {
   @override
   Future<Map<String, String>?> initialNotification() async {
     // Gets the initial notification data from the native platform.
-    final notification = await methodChannel.invokeMethod('getInitialNotification');
+    final notification =
+        await methodChannel.invokeMethod('getInitialNotification');
     if (notification != null) {
       return _convertNotification(notification);
     }
     return null;
   }
 
-  Map<String, String> _convertNotification(final Map notification) => notification.map((final key, final value) => MapEntry(key as String, value as String));
+  Map<String, String> _convertNotification(final Map notification) =>
+      notification.map(
+          (final key, final value) => MapEntry(key as String, value as String));
 
   /// Registers for remote notifications.
   ///
@@ -66,10 +76,14 @@ final class MethodChannelNativePush extends NativePushPlatform {
   /// [vapidKey] - Optional VAPID key for web push notifications.
   /// Returns a Future that resolves to a boolean indicating whether the registration was successful.
   @override
-  Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey}) async {
+  Future<bool> registerForRemoteNotification(
+      {required final List<NotificationOption> options,
+      required final String? vapidKey}) async {
     // Registers for remote notifications with the specified options.
     final arguments = options.map((final option) => option.name).toList();
-    return await methodChannel.invokeMethod<bool>('registerForRemoteNotification', arguments) ?? false;
+    return await methodChannel.invokeMethod<bool>(
+            'registerForRemoteNotification', arguments) ??
+        false;
   }
 
   /// Gets the current notification token.
@@ -78,7 +92,8 @@ final class MethodChannelNativePush extends NativePushPlatform {
   @override
   Future<(NotificationService, String?)> get notificationToken async {
     // Gets the current notification token from the native platform.
-    final token = await methodChannel.invokeMethod<String>('getNotificationToken');
+    final token =
+        await methodChannel.invokeMethod<String>('getNotificationToken');
     return (_notificationService, token);
   }
 
@@ -86,24 +101,24 @@ final class MethodChannelNativePush extends NativePushPlatform {
   ///
   /// Each event in the stream is a tuple containing the notification service and the token, or null if no token is available.
   @override
-  Stream<(NotificationService, String?)> get notificationTokenStream => _tokenStreamController.stream;
+  Stream<(NotificationService, String?)> get notificationTokenStream =>
+      _tokenStreamController.stream;
 
   /// A stream that provides incoming notifications.
   ///
   /// Each event in the stream is a map containing the notification data.
   @override
-  Stream<Map<String, String>> get notificationStream => _notificationStreamController.stream;
+  Stream<Map<String, String>> get notificationStream =>
+      _notificationStreamController.stream;
 
   // Determines the notification service based on the platform.
   @pragma('vm:platform-const')
   static final _notificationService = () {
     if (Platform.isAndroid) {
       return NotificationService.fcm;
-    }
-    else if (Platform.isIOS || Platform.isMacOS) {
+    } else if (Platform.isIOS || Platform.isMacOS) {
       return NotificationService.apns;
-    }
-    else {
+    } else {
       return NotificationService.unknown;
     }
   }();

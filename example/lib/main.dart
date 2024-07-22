@@ -27,40 +27,45 @@ final class _MyApp extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) =>
-    // Define the MaterialApp
-    MaterialApp(
-      home: Scaffold(
-        // Define the AppBar
-        appBar: AppBar(
-          title: const Text('Native push example app'),
-        ),
-        // Define the body of the Scaffold
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextButton(
-                // On button press, register for remote notifications
-                onPressed: () async {
-                  await _nativePushPlugin.registerForRemoteNotification(
-                    options: [NotificationOption.alert, NotificationOption.badge, NotificationOption.sound],
-                    vapidKey: 'BJ4L7FepzRMspZY/utSAxySfXJVw0THgsWIGV5gausv5mvbXW103EfxQkBlXDYC+Z3nsOduWQNBlJrn6pqdQP3Y=',
-                  );
-                },
-                child: const Text('Register for notification'),
-              ),
-              TextButton(
-                // On button press, print notification
-                onPressed: () async {
-                  print(
-                    await _nativePushPlugin.notificationToken,
-                  );
-                },
-                child: const Text('Print token'),
-              ),
-            ],
+      // Define the MaterialApp
+      MaterialApp(
+        home: Scaffold(
+          // Define the AppBar
+          appBar: AppBar(
+            title: const Text('Native push example app'),
+          ),
+          // Define the body of the Scaffold
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  // On button press, register for remote notifications
+                  onPressed: () async {
+                    await _nativePushPlugin.registerForRemoteNotification(
+                      options: [
+                        NotificationOption.alert,
+                        NotificationOption.badge,
+                        NotificationOption.sound
+                      ],
+                      vapidKey:
+                          'BJ4L7FepzRMspZY/utSAxySfXJVw0THgsWIGV5gausv5mvbXW103EfxQkBlXDYC+Z3nsOduWQNBlJrn6pqdQP3Y=',
+                    );
+                  },
+                  child: const Text('Register for notification'),
+                ),
+                TextButton(
+                  // On button press, print notification
+                  onPressed: () async {
+                    print(
+                      await _nativePushPlugin.notificationToken,
+                    );
+                  },
+                  child: const Text('Print token'),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
 }

@@ -41,7 +41,9 @@ abstract base class NativePushPlatform extends PlatformInterface {
   /// [firebaseOptions] - Configuration options for Firebase.
   /// [useDefaultNotificationChannel] - Whether to use the default notification channel.
   /// This method should be implemented by the platform-specific subclass.
-  Future<void> initialize({required final Map<String, String>? firebaseOptions, required final bool useDefaultNotificationChannel});
+  Future<void> initialize(
+      {required final Map<String, String>? firebaseOptions,
+      required final bool useDefaultNotificationChannel});
 
   /// Gets the initial notification if the app was opened from a notification.
   ///
@@ -55,7 +57,9 @@ abstract base class NativePushPlatform extends PlatformInterface {
   /// [vapidKey] - Optional VAPID key for web push notifications.
   /// Returns a Future that resolves to a boolean indicating whether the registration was successful.
   /// This method should be implemented by the platform-specific subclass.
-  Future<bool> registerForRemoteNotification({required final List<NotificationOption> options, required final String? vapidKey});
+  Future<bool> registerForRemoteNotification(
+      {required final List<NotificationOption> options,
+      required final String? vapidKey});
 
   /// Gets the current notification token.
   ///
