@@ -11,3 +11,7 @@
 
 * Fix bug in android which threw an exception when trying to
   initialize the plugin multiple times (also happens on hot restart)
+
+## 1.0.3
+
+* Update dependencies
