@@ -61,6 +61,7 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
         if (mainActivityClass != null) {
             val intent = Intent(this, mainActivityClass)
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            intent.identifier = message.messageId ?: UUID.randomUUID().toString()
             intent.putExtra("native_push_data", JSONObject(message.data as Map<*, *>).toString())
             intent.action = "com.opdehipt.native_push.PUSH"
             val pendingIntent = PendingIntent.getActivity(
