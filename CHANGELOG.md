@@ -15,3 +15,8 @@
 ## 1.0.3
 
 * Update dependencies
+
+## 1.0.4
+
+* Fix bug in android which caused to always
+  pass the same notification data to flutter
