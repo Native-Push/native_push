@@ -16,7 +16,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import org.json.JSONObject
 import java.net.URL
-import java.util.*
+import java.util.UUID
 
 /**
  * Service for handling Firebase push notifications.
@@ -61,12 +61,18 @@ open class NativePushFirebaseMessagingService : FirebaseMessagingService() {
         if (mainActivityClass != null) {
             val intent = Intent(this, mainActivityClass)
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.identifier = message.messageId ?: UUID.randomUUID().toString()
             intent.putExtra("native_push_data", JSONObject(message.data as Map<*, *>).toString())
             intent.action = "com.opdehipt.native_push.PUSH"
+            val requestCode = if (Build.VERSION.SDK_INT >= VERSION_CODES.Q) {
+                intent.identifier = message.messageId ?: UUID.randomUUID().toString()
+                0
+            }
+            else {
+                (message.messageId ?: UUID.randomUUID().toString()).hashCode()
+            }
             val pendingIntent = PendingIntent.getActivity(
                 this,
-                0,
+                requestCode,
                 intent,
                 PendingIntent.FLAG_IMMUTABLE,
             )
