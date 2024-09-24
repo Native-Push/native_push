@@ -20,3 +20,8 @@
 
 * Fix bug in android which caused to always
   pass the same notification data to flutter
+
+## 1.0.5
+
+* Fix a bug which led the android app crash
+  on versions below Android 10
