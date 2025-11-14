@@ -2,7 +2,7 @@
 //  NotificationService.swift
 //  notificationExtension
 //
-//  Created by Sven Op de Hipt on 06.05.24.
+//  Created by Sven on 12.12.24.
 //
 
 import NativePushNotificationService

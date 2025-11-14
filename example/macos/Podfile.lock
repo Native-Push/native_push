@@ -15,9 +15,9 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/native_push/darwin
 
 SPEC CHECKSUMS:
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  native_push: c5279d9e2e3adbea5ad7acfb0b6cdbd65b8eb67f
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  native_push: baf7fe05fd5c2ec94c507b6e0d773bbee12b6294
 
-PODFILE CHECKSUM: 9ebaf0ce3d369aaa26a9ea0e159195ed94724cf3
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:native_push/native_push.dart';
 
@@ -10,10 +8,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize the NativePush plugin
   await _nativePushPlugin.initialize(firebaseOptions: {
-    "projectId": "native-push-example",
-    "applicationId": "1:139523781009:android:eccfa5c94146cf9d7f6a30",
-    "apiKey": "AIzaSyCkx3B99QxiM0UwVyBdOU53Y8mvZFdRsqA"
-  });
+    "projectId": "native-push-example-84703",
+    "applicationId": "1:147621026619:android:5e1626da29f9b6035fb51e",
+    "apiKey": "AIzaSyCtr1BXwsYiJ6RVjMVZ9pf-4S-v7X3I__A"
+  }, useDefaultNotificationChannel: true);
+  _nativePushPlugin.notificationStream.listen((t) => print("Notification: $t"));
 
   // Run the app
   runApp(const _MyApp());
@@ -44,9 +43,9 @@ final class _MyApp extends StatelessWidget {
                   onPressed: () async {
                     await _nativePushPlugin.registerForRemoteNotification(
                       options: [
-                        NotificationOption.alert,
-                        NotificationOption.badge,
-                        NotificationOption.sound
+                        .alert,
+                        .badge,
+                        .sound
                       ],
                       vapidKey:
                           'BJ4L7FepzRMspZY/utSAxySfXJVw0THgsWIGV5gausv5mvbXW103EfxQkBlXDYC+Z3nsOduWQNBlJrn6pqdQP3Y=',

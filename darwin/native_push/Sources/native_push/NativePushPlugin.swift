@@ -2,10 +2,12 @@
 import Flutter
 import UIKit
 public typealias Application = UIApplication
+typealias LaunchOptions = UIScene.ConnectionOptions?
 #else
 import FlutterMacOS
 import Cocoa
 public typealias Application = NSApplication
+typealias LaunchOptions = [AnyHashable : Any]
 #endif
 import UserNotifications
 
@@ -45,16 +47,6 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
     /// - Parameter notification: The launch notification.
     public func handleDidFinishLaunching(_ notification: Notification) {
         applicationStart(launchOptions: notification.userInfo ?? [:])
-    }
-    #else
-    /// Handles the application finish launching event.
-    /// - Parameters:
-    ///   - application: The application instance.
-    ///   - launchOptions: The launch options.
-    /// - Returns: A boolean indicating successful launch.
-    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
-        applicationStart(launchOptions: launchOptions)
-        return true
     }
     #endif
 
@@ -155,13 +147,14 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
 
     /// Handles the application start event and processes any launch options.
     /// - Parameter launchOptions: The launch options.
-    private func applicationStart(launchOptions: [AnyHashable : Any]) {
+    private func applicationStart(launchOptions: LaunchOptions) {
         #if os(iOS)
-        let key = UIApplication.LaunchOptionsKey.remoteNotification
+        let notification = launchOptions?.notificationResponse?.notification.request.content.userInfo
         #else
         let key = NSApplication.launchUserNotificationUserInfoKey
+        let notification = launchOptions[key] as? [AnyHashable: Any]
         #endif
-        if let notification = launchOptions[key] as? [AnyHashable: Any] {
+        if let notification {
             initialNotification = NativePushPlugin.transform(notification: notification)
         }
     }
@@ -265,3 +258,17 @@ public class NativePushPlugin: NSObject, FlutterPlugin, UNUserNotificationCenter
         UserDefaults.standard.string(forKey: "native_push_remoteNotificationDeviceToken")
     }
 }
+
+#if os(iOS)
+extension NativePushPlugin: FlutterSceneLifeCycleDelegate {
+    /// Handles the application finish launching event.
+    /// - Parameters:
+    ///   - application: The application instance.
+    ///   - launchOptions: The launch options.
+    /// - Returns: A boolean indicating successful launch.
+    public func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions?) -> Bool {
+        applicationStart(launchOptions: connectionOptions)
+        return true
+    }
+}
+#endif

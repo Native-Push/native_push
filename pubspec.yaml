@@ -1,6 +1,6 @@
 name: native_push
 description: "The Native Push Plugin is a Flutter plugin that provides seamless integration of push notifications across different platforms including Android, iOS, macOS, and Web. "
-version: 1.0.5
+version: 1.0.6
 repository: https://github.com/native-Push/native_push
 
 environment:
@@ -16,7 +16,7 @@ dependencies:
   web: ^1.0.0
 
 dev_dependencies:
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 

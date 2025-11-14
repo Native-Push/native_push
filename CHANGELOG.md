@@ -25,3 +25,7 @@
 
 * Fix a bug which led the android app crash
   on versions below Android 10
+
+## 1.0.6
+
+* Update dependencies
